@@ -69,18 +69,27 @@ toDosReqHandler.delete('/to-dos/:id', async (request, response) => {
     }
 })
 
-toDosReqHandler.patch('/to-dos', async (request, response) => {
+toDosReqHandler.patch('/to-dos/:id', async (request, response) => {
     try {
-        const { id, title, description, isDone: is_done } = request.body;
+        const id = request.params.id
+        const { title, description, isDone: is_done } = request.body;
         const dbHandler = await getDBHandler()
 
-        const updateToDo = dbHandler.run(`
-            UPDATE todos SET title = '${title}', description = '${description}', is_done = ${is_done} WHERE id = ?`,
+        const updateToDo = await dbHandler.get(`
+            SELECT * FROM todos WHERE id = ?
+        `, id)
+
+        dbHandler.run(`
+            UPDATE todos SET title = ?, description = ?, is_done = ? WHERE id = ?
+            `,
+            title || updateToDo.title,
+            description || updateToDo.description,
+            is_done || updateToDo.is_done,
             id)
 
-        dbHandler.close()
+        await dbHandler.close()
 
-        response.send({ updateToDo: { id, title, description, is_done, ...updateToDo } })
+        response.send({ updateToDo: { ...updateToDo, title, description, is_done } })
     } catch (error) {
         response.status(500).send({
             error: `Something went wrong when trying to update a to do`,

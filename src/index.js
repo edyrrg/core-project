@@ -6,7 +6,7 @@ const api = express();
 
 api.use(express.json());
 api.use(express.urlencoded({ extended: false }))
-api.use("/v1", toDosReqHandler)
+api.use("/api/v1", toDosReqHandler)
 
 api.listen(port, () => {
     console.log(
