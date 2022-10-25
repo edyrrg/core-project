@@ -72,19 +72,19 @@ toDosReqHandler.delete('/to-dos/:id', async (request, response) => {
 toDosReqHandler.patch('/to-dos/:id', async (request, response) => {
     try {
         const id = request.params.id
-        const { title, description, isDone: is_done } = request.body;
+        const { title, description, is_done } = request.body;
         const dbHandler = await getDBHandler()
 
         const updateToDo = await dbHandler.get(`
             SELECT * FROM todos WHERE id = ?
         `, id)
-
+        let isDone = is_done ? 1 : 0
         dbHandler.run(`
             UPDATE todos SET title = ?, description = ?, is_done = ? WHERE id = ?
             `,
             title || updateToDo.title,
             description || updateToDo.description,
-            is_done || updateToDo.is_done,
+            isDone,
             id)
 
         await dbHandler.close()
